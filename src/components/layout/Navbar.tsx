@@ -84,11 +84,11 @@ export const Navbar: React.FC = () => {
               onClick={() => handleNav(currentUser ? getDashboardView() : 'landing')}
               className="flex items-center gap-2.5 text-left group focus:outline-none"
             >
-              <div className="w-10 h-10 rounded-xl bg-white p-1 shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform duration-200 border border-slate-700/50 flex items-center justify-center overflow-hidden">
+              <div className="w-10 h-10 rounded-full bg-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform duration-200 border border-slate-700/50 flex items-center justify-center overflow-hidden">
                 <img
                   src="/logo.png"
                   alt="LearnX Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               </div>

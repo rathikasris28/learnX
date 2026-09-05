@@ -43,11 +43,11 @@ export const Footer: React.FC = () => {
           {/* Col 1: Brand Info */}
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-white p-1 border border-slate-700 flex items-center justify-center text-white font-extrabold text-base shadow-md overflow-hidden">
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-700 flex items-center justify-center text-white font-extrabold text-base shadow-md overflow-hidden">
                 <img
                   src="/logo.png"
                   alt="LearnX Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               </div>

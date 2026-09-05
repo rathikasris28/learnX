@@ -164,7 +164,7 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
             <img
               src="/logo.png"
               alt="LearnX Logo"
-              className="w-8 h-8 rounded-lg bg-white p-0.5 object-contain shadow"
+              className="w-8 h-8 rounded-full bg-white object-cover shadow"
               referrerPolicy="no-referrer"
             />
             <div>

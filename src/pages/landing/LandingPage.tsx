@@ -35,11 +35,11 @@ export const LandingPage: React.FC = () => {
             
             {/* Official Brand Emblem & Logo */}
             <div className="flex flex-col items-center justify-center gap-3">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white p-2 shadow-2xl shadow-teal-500/20 border-2 border-slate-700/60 transition-transform hover:scale-105">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white shadow-2xl shadow-teal-500/20 border-2 border-slate-700/60 transition-transform hover:scale-105 overflow-hidden">
                 <img
                   src="/logo.png"
                   alt="LearnX Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               </div>

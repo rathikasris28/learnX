@@ -54,7 +54,7 @@ class AppErrorBoundary extends React.Component<
       return (
         <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6 text-center">
           <div className="max-w-md">
-            <img src="/logo.png" alt="LearnX Logo" className="w-16 h-16 bg-white rounded-2xl p-2 mx-auto" />
+            <img src="/logo.png" alt="LearnX Logo" className="w-16 h-16 bg-white rounded-full mx-auto object-cover" />
             <h1 className="text-2xl font-bold mt-5">LearnX needs a refresh</h1>
             <p className="text-slate-400 mt-2">We could not load this screen. Your account data is safe.</p>
             <button onClick={() => window.location.reload()} className="mt-5 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 font-bold text-sm">Reload LearnX</button>

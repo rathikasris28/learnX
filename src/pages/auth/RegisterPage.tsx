@@ -264,11 +264,11 @@ export const RegisterPage: React.FC = () => {
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
       {/* Brand Header */}
       <div className="text-center mb-8 flex flex-col items-center">
-        <div className="w-14 h-14 rounded-2xl bg-white p-1.5 shadow-md border border-slate-200 flex items-center justify-center mb-2 overflow-hidden">
+        <div className="w-14 h-14 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center mb-2 overflow-hidden">
           <img
             src="/logo.png"
             alt="LearnX Logo"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
           />
         </div>

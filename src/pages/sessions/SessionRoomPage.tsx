@@ -173,11 +173,11 @@ export const SessionRoomPage: React.FC = () => {
         
         {/* Left: Brand Emblem & Session Name */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-white p-1 border border-slate-700 flex items-center justify-center overflow-hidden shadow">
+          <div className="w-8 h-8 rounded-full bg-white border border-slate-700 flex items-center justify-center overflow-hidden shadow">
             <img
               src="/logo.png"
               alt="LearnX Logo"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
           </div>

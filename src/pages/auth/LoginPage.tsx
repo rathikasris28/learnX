@@ -45,11 +45,11 @@ export const LoginPage: React.FC = () => {
       <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 p-7 sm:p-9 shadow-lg space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-2xl bg-white p-1.5 border border-slate-200 shadow-md flex items-center justify-center mx-auto overflow-hidden">
+          <div className="w-16 h-16 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center mx-auto overflow-hidden">
             <img
               src="/logo.png"
               alt="LearnX Logo"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />
           </div>
