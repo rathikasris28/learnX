@@ -1,0 +1,6 @@
+{
+  "name": "LearnX",
+  "description": "Exchange. Learn. Grow. An AI-powered peer-to-peer knowledge and learning exchange platform.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
