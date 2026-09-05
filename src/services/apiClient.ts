@@ -1,4 +1,4 @@
-import { UserProfile, UserRole } from '../types';
+import { SkillProofLevel, UserProfile, UserRole } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -70,13 +70,22 @@ export type ApiSkill = {
 };
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+    });
+  } catch {
+    throw new Error('LearnX server is unavailable. Start the backend with "npm run dev" in the backend folder.');
+  }
+
   const payload = (await response.json().catch(() => ({}))) as { error?: string; details?: unknown };
   if (!response.ok) {
-    throw new Error(payload.error || 'The server request failed');
+    if (response.status === 401) {
+      throw new Error('Your session has expired. Please sign in again.');
+    }
+    throw new Error(payload.error || `Server request failed (${response.status}).`);
   }
   return payload as T;
 }
@@ -165,7 +174,7 @@ export function mapApiMatchToTrainer(match: ApiMatch) {
     reliabilityScore: match.reliability,
     trustScore: match.trustScore,
     completedSessions: match.completedSessions,
-    skills: match.skillNames.map((name) => ({ name, level: 'Advanced' as const, experienceYears: 0 })),
+    skills: match.skillNames.map((name) => ({ name, level: 'ai-assessed' as SkillProofLevel, experienceYears: 0 })),
     availabilitySlots: match.availability.map((time) => ({ time, status: 'available' as const })),
     matchReasons: match.reasons
   };

@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { useApp, AppView } from '../../context/AppContext';
 
+type NavLink = { label: string; view: AppView; badge?: string };
+
 export const Navbar: React.FC = () => {
   const {
     currentUser,
@@ -61,7 +63,7 @@ export const Navbar: React.FC = () => {
     return 'learner-dashboard';
   };
 
-  const navLinks = [
+  const navLinks: NavLink[] = [
     { label: 'Home', view: getDashboardView() },
     { label: 'Learn', view: 'learn' as AppView },
     { label: 'Teach', view: 'teach' as AppView },

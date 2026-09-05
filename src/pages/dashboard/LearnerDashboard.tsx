@@ -41,6 +41,7 @@ export const LearnerDashboard: React.FC = () => {
   const upcomingSession = sessions.find(s => s.status === 'scheduled');
   const [topMatchTrainer, setTopMatchTrainer] = useState<ReturnType<typeof mapApiMatchToTrainer> | null>(null);
   const [matchStatus, setMatchStatus] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
+  const [matchError, setMatchError] = useState('');
 
   useEffect(() => {
     const targetSkill = currentUser?.skillsLearning[0];
@@ -56,7 +57,10 @@ export const LearnerDashboard: React.FC = () => {
         setMatchStatus(matches.length ? 'ready' : 'empty');
       })
       .catch(() => {
-        if (active) setMatchStatus('error');
+        if (active) {
+          setMatchError('Unable to load registered Knowledge Sharers. Please sign in again or restart the backend.');
+          setMatchStatus('error');
+        }
       });
     return () => { active = false; };
   }, [currentUser?.id, currentUser?.learningLevel, currentUser?.skillsLearning]);
@@ -354,7 +358,7 @@ export const LearnerDashboard: React.FC = () => {
           </div>
 
           {matchStatus === 'loading' && <p className="text-sm text-slate-500">Analyzing registered Knowledge Sharers...</p>}
-          {matchStatus === 'error' && <p className="text-sm text-red-600">Recommendations are temporarily unavailable.</p>}
+          {matchStatus === 'error' && <p className="text-sm text-red-600">{matchError}</p>}
           {matchStatus === 'empty' && <p className="text-sm text-slate-500">No verified Knowledge Sharers match your learning skills yet.</p>}
           {topMatchTrainer && (
             <div className="bg-white rounded-3xl border border-teal-200/80 p-6 shadow-md bg-gradient-to-b from-teal-50/20 to-white space-y-5">
