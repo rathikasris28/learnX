@@ -175,7 +175,7 @@ export const SessionRoomPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-white border border-slate-700 flex items-center justify-center overflow-hidden shadow">
             <img
-              src="/logo.png"
+              src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
               alt="LearnX Logo"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"

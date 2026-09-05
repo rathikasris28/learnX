@@ -68,7 +68,6 @@ export const Navbar: React.FC = () => {
     { label: 'Discover', view: 'discover' as AppView },
     { label: 'My Learning', view: 'my-learning' as AppView },
     { label: 'Sessions', view: 'sessions' as AppView },
-    { label: 'AI Assistant', view: 'assistant' as AppView, badge: 'AI' },
     { label: 'Courses', view: 'courses' as AppView },
     { label: 'Wallet', view: 'wallet' as AppView }
   ];
@@ -86,7 +85,7 @@ export const Navbar: React.FC = () => {
             >
               <div className="w-10 h-10 rounded-full bg-white shadow-md shadow-teal-500/20 group-hover:scale-105 transition-transform duration-200 border border-slate-700/50 flex items-center justify-center overflow-hidden">
                 <img
-                  src="/logo.png"
+                  src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
                   alt="LearnX Logo"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"

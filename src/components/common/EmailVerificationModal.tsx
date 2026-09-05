@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mail, CheckCircle2, AlertCircle, RefreshCw, X, ShieldCheck, Sparkles, ArrowRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { resendVerificationWithApi, verifyEmailWithApi } from '../../services/apiClient';
 
 interface EmailVerificationModalProps {
   emailToVerify?: string;
@@ -19,8 +20,7 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     currentUser,
     isEmailVerificationModalOpen,
     setIsEmailVerificationModalOpen,
-    verifyEmail,
-    sendVerificationEmail,
+    setCurrentUser,
     showToast
   } = useApp();
 
@@ -118,7 +118,7 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     }
   };
 
-  const attemptVerify = (codeToVerify?: string) => {
+  const attemptVerify = async (codeToVerify?: string) => {
     const code = codeToVerify || digits.join('');
     if (code.length < 6) {
       setErrorMessage('Please enter the full 6-digit verification code.');
@@ -128,28 +128,30 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     setIsSubmitting(true);
     setErrorMessage('');
 
-    setTimeout(() => {
-      const success = verifyEmail(code);
+    try {
+      await verifyEmailWithApi(targetEmail, code);
+      setCurrentUser((user) => user ? { ...user, isEmailVerified: true } : user);
       setIsSubmitting(false);
-      if (success) {
-        setIsSuccess(true);
-        if (onSuccess) onSuccess();
-        setTimeout(() => {
-          handleClose();
-        }, 1200);
-      } else {
-        setErrorMessage('Invalid or expired verification code. Request a new code and try again.');
-      }
-    }, 600);
+      setIsSuccess(true);
+      if (onSuccess) onSuccess();
+      setTimeout(() => handleClose(), 1200);
+    } catch (error) {
+      setIsSubmitting(false);
+      setErrorMessage(error instanceof Error ? error.message : 'Invalid or expired verification code.');
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (!canResend) return;
-    const newCode = sendVerificationEmail(targetEmail);
-    setCountdown(45);
-    setCanResend(false);
-    setErrorMessage('');
-    showToast(`New code sent: ${newCode}`, 'info');
+    try {
+      await resendVerificationWithApi(targetEmail);
+      setCountdown(45);
+      setCanResend(false);
+      setErrorMessage('');
+      showToast('A new verification code has been sent.', 'info');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to resend the verification code.');
+    }
   };
 
   if (!showModal) return null;
@@ -162,7 +164,7 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
         <div className="bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-600 px-6 py-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
-              src="/logo.png"
+              src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
               alt="LearnX Logo"
               className="w-8 h-8 rounded-full bg-white object-cover shadow"
               referrerPolicy="no-referrer"

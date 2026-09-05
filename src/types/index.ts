@@ -56,6 +56,8 @@ export interface Trainer {
   avatar: string;
   rating: number;
   reviewsCount: number;
+  reviewCount?: number;
+  location?: string;
   aiMatchScore: number; // e.g. 96
   languages: string[];
   teachingStyles: string[];
@@ -116,6 +118,7 @@ export interface WalletTransaction {
   skillName?: string;
   date: string;
   timestamp: number;
+  sessionId?: string;
 }
 
 export interface LearningPathModule {
@@ -141,6 +144,7 @@ export interface LearningPlan {
   skillName: string;
   duration: string;
   overallProgress: number; // percentage e.g. 72
+  trackTitle?: string;
   modules: LearningPathModule[];
   weeks?: LearningPlanWeek[];
 }

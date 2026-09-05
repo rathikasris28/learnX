@@ -49,7 +49,7 @@ export const CommunityPage: React.FC = () => {
                 <div>
                   <div className="relative h-44 overflow-hidden">
                     <img
-                      src="/logo.png"
+                      src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
                       alt={course.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition"
                     />

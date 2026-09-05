@@ -15,6 +15,12 @@ export default defineConfig(() => {
       port: 3000,
       host: '0.0.0.0',
       strictPort: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:4000',
+          changeOrigin: true,
+        },
+      },
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
@@ -26,7 +32,6 @@ export default defineConfig(() => {
             react: ['react', 'react-dom'],
             icons: ['lucide-react'],
             motion: ['motion'],
-            ai: ['@google/genai'],
           },
         },
       },

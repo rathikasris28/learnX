@@ -3,6 +3,7 @@ import { X, Calendar, Clock, Sparkles, BookOpen, AlertCircle, CheckCircle2 } fro
 import { Trainer } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { TimeCreditNotice } from '../common/TimeCreditNotice';
+import { bookSessionWithApi } from '../../services/apiClient';
 
 export const ScheduleSessionModal: React.FC<{
   trainer?: Trainer;
@@ -15,7 +16,9 @@ export const ScheduleSessionModal: React.FC<{
     selectedTrainer,
     trainers,
     isScheduleModalOpen,
-    setIsScheduleModalOpen
+    setIsScheduleModalOpen,
+    setCurrentUser,
+    showToast
   } = useApp();
 
   const trainer = props.trainer || selectedTrainer || trainers?.[0];
@@ -49,8 +52,44 @@ export const ScheduleSessionModal: React.FC<{
 
   if (!isOpen || !trainer) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const hasBackendTrainer = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(trainer.id);
+    const hasBackendSession = Boolean(localStorage.getItem('learnx_access_token')) && hasBackendTrainer;
+
+    if (hasBackendSession) {
+      const dayOffset = date === 'Tomorrow' ? 1 : date === 'In 2 Days' ? 2 : 0;
+      const start = new Date();
+      start.setDate(start.getDate() + dayOffset);
+      const [, hourText, minuteText, meridiem] = selectedSlot.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i) || [];
+      if (!hourText || !minuteText || !meridiem) {
+        showToast('Please choose a valid time slot.', 'error');
+        return;
+      }
+      const hours = Number(hourText);
+      const minutes = Number(minuteText);
+      const normalizedHours = (hours % 12) + (meridiem.toUpperCase() === 'PM' ? 12 : 0);
+      start.setHours(normalizedHours, minutes, 0, 0);
+      const durationMinutes = Number.parseInt(duration, 10) || 45;
+      const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+      try {
+        await bookSessionWithApi({
+          trainerId: trainer.id,
+          skill: trainer.skills?.[0]?.name || 'Python',
+          topic,
+          startsAt: start.toISOString(),
+          endsAt: end.toISOString(),
+          learningGoal
+        });
+        setCurrentUser((user) => user ? { ...user, timeCredits: Math.max(0, user.timeCredits - 1), totalUsedCredits: user.totalUsedCredits + 1 } : user);
+        showToast('Session booked and Time Credit secured.', 'success');
+        handleClose();
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Unable to book this session.', 'error');
+      }
+      return;
+    }
+
     const success = bookSession({
       skillTitle: trainer.skills?.[0]?.name || 'Python',
       topic,

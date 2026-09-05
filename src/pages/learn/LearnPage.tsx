@@ -14,9 +14,10 @@ import { useApp } from '../../context/AppContext';
 import { ALL_SKILLS } from '../../constants/skillsData';
 import { TrainerCard } from '../../components/cards/TrainerCard';
 import { TimeCreditNotice } from '../../components/common/TimeCreditNotice';
+import { rankLocalTrainers } from '../../services/matchingService';
 
 export const LearnPage: React.FC = () => {
-  const { trainers, setSelectedTrainer, setIsScheduleModalOpen } = useApp();
+  const { trainers, currentUser } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -69,6 +70,18 @@ export const LearnPage: React.FC = () => {
 
     return true;
   });
+
+  const rankedTrainers = rankLocalTrainers(
+    filteredTrainers,
+    {
+      skill: selectedSkill,
+      languages: selectedLanguage === 'all' ? currentUser?.languages : [selectedLanguage],
+      teachingStyle: selectedStyle
+    },
+    currentUser
+  );
+
+  const visibleTrainers = rankedTrainers.map((result) => result.trainer);
 
   const clearAllFilters = () => {
     setSearchQuery('');
@@ -214,7 +227,7 @@ export const LearnPage: React.FC = () => {
             <div className="flex items-center gap-1.5 text-slate-500">
               <SlidersHorizontal className="w-3.5 h-3.5 text-teal-600" />
               <span>
-                Showing <strong>{filteredTrainers.length}</strong> matching trainers:
+                Showing <strong>{visibleTrainers.length}</strong> trainers ranked by explainable AI compatibility:
               </span>
             </div>
             <button
@@ -228,9 +241,9 @@ export const LearnPage: React.FC = () => {
       </div>
 
       {/* Trainers Grid */}
-      {filteredTrainers.length > 0 ? (
+      {visibleTrainers.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTrainers.map((trainer) => (
+          {visibleTrainers.map((trainer) => (
             <TrainerCard key={trainer.id} trainer={trainer} />
           ))}
         </div>

@@ -140,7 +140,7 @@ export const MyLearningPage: React.FC = () => {
               Current Active Track
             </span>
             <h2 className="text-xl font-bold text-slate-900 font-heading mt-0.5">
-              {learningPlan.trackTitle}
+              {learningPlan.trackTitle || learningPlan.skillName}
             </h2>
           </div>
           <div className="flex items-center gap-3">

@@ -35,6 +35,7 @@ export type AppView =
   | 'sessions'
   | 'session-room'
   | 'wallet'
+  | 'community'
   | 'achievements'
   | 'notifications'
   | 'profile'
@@ -42,8 +43,7 @@ export type AppView =
   | 'trainer-profile'
   | 'courses'
   | 'course-detail'
-  | 'quiz'
-  | 'assistant';
+  | 'quiz';
 
 interface ToastData {
   text: string;
@@ -451,6 +451,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
+    localStorage.removeItem('learnx_access_token');
     setCurrentUser(null);
     setActiveView('login');
     showToast('You have been logged out.', 'info');

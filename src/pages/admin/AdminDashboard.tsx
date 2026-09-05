@@ -65,7 +65,7 @@ export const AdminDashboard: React.FC = () => {
     if (actionType === 'warn') {
       showToast('Official platform warning issued to user.', 'warning');
     } else if (actionType === 'suspend') {
-      showToast('User account suspended for non-monetary policy violation.', 'danger');
+      showToast('User account suspended for non-monetary policy violation.', 'error');
     } else {
       showToast('Report reviewed and dismissed.', 'info');
     }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Sparkles,
   Clock,
@@ -17,6 +17,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { TimeCreditNotice } from '../../components/common/TimeCreditNotice';
 import { TrainerAvailabilityBadge, TrustScoreBadge, ReliabilityBadge } from '../../components/common/BadgeComponents';
+import { findMatchesWithApi, mapApiMatchToTrainer } from '../../services/apiClient';
 
 export const LearnerDashboard: React.FC = () => {
   const {
@@ -38,7 +39,27 @@ export const LearnerDashboard: React.FC = () => {
 
   // Upcoming session
   const upcomingSession = sessions.find(s => s.status === 'scheduled');
-  const topMatchTrainer = trainers[0]; // Priya Raman (96% Match)
+  const [topMatchTrainer, setTopMatchTrainer] = useState<ReturnType<typeof mapApiMatchToTrainer> | null>(null);
+  const [matchStatus, setMatchStatus] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
+
+  useEffect(() => {
+    const targetSkill = currentUser?.skillsLearning[0];
+    if (!targetSkill) {
+      setMatchStatus('empty');
+      return;
+    }
+    let active = true;
+    findMatchesWithApi({ skill: targetSkill, level: currentUser.learningLevel })
+      .then(({ matches }) => {
+        if (!active) return;
+        setTopMatchTrainer(matches[0] ? mapApiMatchToTrainer(matches[0]) : null);
+        setMatchStatus(matches.length ? 'ready' : 'empty');
+      })
+      .catch(() => {
+        if (active) setMatchStatus('error');
+      });
+    return () => { active = false; };
+  }, [currentUser?.id, currentUser?.learningLevel, currentUser?.skillsLearning]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -326,12 +347,15 @@ export const LearnerDashboard: React.FC = () => {
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-teal-600" />
               <h2 className="text-xl font-bold text-slate-900 font-heading">
-                AI Recommendation
+                Recommended Match
               </h2>
             </div>
             <span className="text-xs text-slate-400">Match score engine</span>
           </div>
 
+          {matchStatus === 'loading' && <p className="text-sm text-slate-500">Analyzing registered Knowledge Sharers...</p>}
+          {matchStatus === 'error' && <p className="text-sm text-red-600">Recommendations are temporarily unavailable.</p>}
+          {matchStatus === 'empty' && <p className="text-sm text-slate-500">No verified Knowledge Sharers match your learning skills yet.</p>}
           {topMatchTrainer && (
             <div className="bg-white rounded-3xl border border-teal-200/80 p-6 shadow-md bg-gradient-to-b from-teal-50/20 to-white space-y-5">
               <div className="flex items-center justify-between">
@@ -359,12 +383,9 @@ export const LearnerDashboard: React.FC = () => {
               </div>
 
               <div className="space-y-2 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-                <p className="font-semibold text-slate-800">Why AI matched Priya for you:</p>
+                <p className="font-semibold text-slate-800">Why this match was recommended:</p>
                 <ul className="list-disc list-inside space-y-1 text-slate-600 text-[11px]">
-                  <li>Expertise aligns with your current Python Week 3 topic</li>
-                  <li>Shares your preferred Tamil & English communication medium</li>
-                  <li>98% reliability score with zero cancellations</li>
-                  <li>Beginner-friendly and project-based teaching style</li>
+                  {topMatchTrainer.matchReasons?.map((reason) => <li key={reason}>{reason}</li>)}
                 </ul>
               </div>
 

@@ -1,42 +1,34 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { INITIAL_LEARNER_USER, INITIAL_TEACHER_USER, INITIAL_ADMIN_USER } from '../../data/mockData';
+import { loginWithApi } from '../../services/apiClient';
 
 export const LoginPage: React.FC = () => {
-  const { setCurrentUser, setActiveView, setIsEmailVerificationModalOpen, sendVerificationEmail, showToast } = useApp();
+  const { setCurrentUser, setActiveView, setIsEmailVerificationModalOpen, showToast } = useApp();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       showToast('Please enter both email and password.', 'warning');
       return;
     }
 
-    // Role-based mock redirect logic
-    if (email.toLowerCase().includes('teacher') || email.toLowerCase().includes('priya')) {
-      setCurrentUser({ ...INITIAL_TEACHER_USER, email, isEmailVerified: false });
-      setActiveView('teacher-dashboard');
-      sendVerificationEmail(email);
-      setIsEmailVerificationModalOpen(true);
-      showToast('Welcome back, Priya! Switched to Teacher Dashboard.', 'success');
-    } else if (email.toLowerCase().includes('admin')) {
-      setCurrentUser({ ...INITIAL_ADMIN_USER, email, isEmailVerified: false });
-      setActiveView('admin-dashboard');
-      sendVerificationEmail(email);
-      setIsEmailVerificationModalOpen(true);
-      showToast('Welcome back, Kavitha! Switched to Admin Dashboard.', 'success');
-    } else {
-      setCurrentUser({ ...INITIAL_LEARNER_USER, email, isEmailVerified: false });
-      setActiveView('learner-dashboard');
-      sendVerificationEmail(email);
-      setIsEmailVerificationModalOpen(true);
-      showToast('Welcome back, Aarav! Switched to Learner Dashboard.', 'success');
+    try {
+      const result = await loginWithApi(email, password);
+      localStorage.setItem('learnx_access_token', result.token);
+      setCurrentUser(result.user);
+      setActiveView(result.user.role === 'teacher' ? 'teacher-dashboard' : result.user.role === 'admin' ? 'admin-dashboard' : 'learner-dashboard');
+      if (result.verificationRequired) {
+        setIsEmailVerificationModalOpen(true);
+      }
+      showToast(`Welcome back, ${result.user.name.split(' ')[0]}!`, 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Unable to sign in right now.', 'error');
     }
   };
 
@@ -47,7 +39,7 @@ export const LoginPage: React.FC = () => {
         <div className="text-center space-y-2">
           <div className="w-16 h-16 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center mx-auto overflow-hidden">
             <img
-              src="/logo.png"
+              src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
               alt="LearnX Logo"
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"

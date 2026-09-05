@@ -80,7 +80,7 @@ export const TrainerProfilePage: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm font-medium text-slate-600">
-                  {trainer.title} • {trainer.location}
+                  {trainer.title}{trainer.location ? ` • ${trainer.location}` : ''}
                 </p>
               </div>
             </div>
@@ -106,7 +106,7 @@ export const TrainerProfilePage: React.FC = () => {
               </div>
               <div>
                 <span className="font-bold text-slate-900 block">{trainer.rating} / 5.0</span>
-                <span className="text-slate-500 text-[10px]">{trainer.reviewCount} peer reviews</span>
+                <span className="text-slate-500 text-[10px]">{trainer.reviewsCount} peer reviews</span>
               </div>
             </div>
 
@@ -180,7 +180,7 @@ export const TrainerProfilePage: React.FC = () => {
           <div className="space-y-3 pt-2">
             {(trainer.skills || []).map((skill) => {
               const name = typeof skill === 'string' ? skill : skill.name;
-              const level = typeof skill === 'string' ? 'Intermediate' : skill.level;
+              const level = typeof skill === 'string' ? 'self-claimed' : skill.level;
               const years = typeof skill === 'string' ? '1+' : (skill.experienceYears ?? '1+');
               return (
                 <div

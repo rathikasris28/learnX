@@ -22,9 +22,10 @@ import {
   Calendar
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { UserProfile, UserRole } from '../../types';
+import { UserRole } from '../../types';
 import { ALL_SKILLS } from '../../constants/skillsData';
 import { TimeCreditNotice } from '../../components/common/TimeCreditNotice';
+import { registerWithApi } from '../../services/apiClient';
 
 export const RegisterPage: React.FC = () => {
   const {
@@ -32,8 +33,7 @@ export const RegisterPage: React.FC = () => {
     setCurrentUser,
     setActiveView,
     showToast,
-    setIsEmailVerificationModalOpen,
-    sendVerificationEmail
+    setIsEmailVerificationModalOpen
   } = useApp();
 
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -188,53 +188,34 @@ export const RegisterPage: React.FC = () => {
   };
 
   // Complete Registration
-  const handleCompleteRegistration = () => {
+  const handleCompleteRegistration = async () => {
     if (!termsAccepted) {
       setErrorMsg('You must agree to the Terms and Conditions to complete registration.');
       return;
     }
 
-    // Learner gets +5 starter credits, Teacher gets 0
-    const startingCredits = role === 'teacher' ? 0 : 5;
-
-    const newUser: UserProfile = {
-      id: `usr_${Date.now()}`,
-      name: fullName,
-      email,
-      role,
-      avatar:
-          role !== 'teacher'
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
-          : 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-      country,
-      state: stateName,
-      city: cityName,
-      languages: selectedLanguages,
-      bio:
-          role !== 'teacher'
-          ? `Learner excited to master ${skillsLearning.join(', ')}.`
-          : `Knowledge Sharer passionate about helping peers learn ${skillsTeaching.join(', ')}.`,
-      joinedDate: 'September 2026',
-      timeCredits: startingCredits,
-      totalEarnedCredits: 0,
-      totalUsedCredits: 0,
-      rating: 5.0,
-      reliabilityScore: 100,
-      trustScore: 90,
-      skillsLearning: role !== 'teacher' ? skillsLearning : [],
-      skillsTeaching: role !== 'learner' ? skillsTeaching : [],
-      learningLevel: role !== 'teacher' ? learningLevel : undefined,
-      teachingLevel: role !== 'learner' ? teachingLevel : undefined,
-      learningGoal: role !== 'teacher' ? learningGoal : undefined,
-      availability: role !== 'learner' ? availability : undefined,
-      termsAccepted: true,
-      termsVersion: '1.0',
-      termsAcceptedDate: new Date().toISOString()
-    };
-
-    setCurrentUser(newUser);
-    sendVerificationEmail(email);
-    setIsEmailVerificationModalOpen(true);
+    try {
+      const result = await registerWithApi({
+        name: fullName,
+        email,
+        password,
+        role,
+        country,
+        state: stateName,
+        city: cityName,
+        languages: selectedLanguages,
+        skillsLearning: role !== 'teacher' ? skillsLearning : [],
+        skillsTeaching: role !== 'learner' ? skillsTeaching : [],
+        termsAccepted: true,
+        termsVersion: '1.0'
+      });
+      localStorage.setItem('learnx_access_token', result.token);
+      setCurrentUser(result.user);
+      setIsEmailVerificationModalOpen(true);
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : 'Unable to create your account right now.');
+      return;
+    }
 
     // Trigger celebration confetti
     try {
@@ -266,7 +247,7 @@ export const RegisterPage: React.FC = () => {
       <div className="text-center mb-8 flex flex-col items-center">
         <div className="w-14 h-14 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center mb-2 overflow-hidden">
           <img
-            src="/logo.png"
+            src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
             alt="LearnX Logo"
             className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
@@ -1209,7 +1190,6 @@ export const RegisterPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      sendVerificationEmail(email || currentUser?.email);
                       setIsEmailVerificationModalOpen(true);
                     }}
                     className="flex-1 py-2 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5"

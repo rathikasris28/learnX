@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Info, Sparkles, BookOpen, GraduationCap, HeartHandshake } from 'lucide-react';
+import { ShieldCheck, Info, BookOpen, GraduationCap, HeartHandshake } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const Footer: React.FC = () => {
@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-700 flex items-center justify-center text-white font-extrabold text-base shadow-md overflow-hidden">
                 <img
-                  src="/logo.png"
+                  src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
                   alt="LearnX Logo"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -102,15 +102,6 @@ export const Footer: React.FC = () => {
                   className="hover:text-teal-300 transition-colors"
                 >
                   Explore Non-Technical Skills
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setActiveView('assistant')}
-                  className="hover:text-teal-300 transition-colors flex items-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-                  AI Learning Assistant
                 </button>
               </li>
             </ul>

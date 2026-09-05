@@ -22,10 +22,12 @@ import { TimeCreditNotice, FreelanceWarningCard } from '../../components/common/
 
 export const LandingPage: React.FC = () => {
   const { setActiveView } = useApp();
+
   return (
-    <div className="space-y-20 pb-16">
+    <div className="landing-experience">
+      <div className="landing-slides-track">
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 sm:pt-20 pb-16 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white">
+      <section className="landing-slide relative overflow-hidden pt-8 sm:pt-12 pb-12 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white">
         {/* Abstract CSS AI Glow Blobs */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-teal-500/10 blur-[130px] rounded-full pointer-events-none" />
         <div className="absolute top-1/3 left-1/4 w-[400px] h-[300px] bg-blue-600/15 blur-[120px] rounded-full pointer-events-none" />
@@ -37,7 +39,7 @@ export const LandingPage: React.FC = () => {
             <div className="flex flex-col items-center justify-center gap-3">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white shadow-2xl shadow-teal-500/20 border-2 border-slate-700/60 transition-transform hover:scale-105 overflow-hidden">
                 <img
-                  src="/logo.png"
+                  src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg"
                   alt="LearnX Logo"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -45,7 +47,7 @@ export const LandingPage: React.FC = () => {
               </div>
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-teal-500/30 text-teal-300 text-xs font-semibold shadow-inner animate-in fade-in duration-300">
                 <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-                <span>Official Tagline: <strong>Exchange. Learn. Grow.</strong></span>
+                <span><strong>Exchange. Learn. Grow.</strong></span>
               </div>
             </div>
 
@@ -147,7 +149,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* How LearnX Works Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="landing-slide max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
           <span className="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
             Interactive Workflow
@@ -223,12 +225,12 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Mandatory Platform Disclaimer Callout Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="landing-slide max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
         <FreelanceWarningCard />
       </section>
 
       {/* Bottom CTA Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="landing-slide max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
         <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-800 text-white p-8 sm:p-12 text-center relative overflow-hidden shadow-2xl">
           <div className="max-w-2xl mx-auto space-y-5">
             <h2 className="text-3xl sm:text-4xl font-extrabold font-heading">
@@ -254,6 +256,8 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+      </div>
+
     </div>
   );
 };

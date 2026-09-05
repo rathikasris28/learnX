@@ -30,7 +30,6 @@ import { CourseDetailPage } from './pages/community/CourseDetailPage';
 import { CreditPolicyPage } from './pages/policy/CreditPolicyPage';
 import { SessionRoomPage } from './pages/sessions/SessionRoomPage';
 import { SessionsPage } from './pages/sessions/SessionsPage';
-import { AssistantPage } from './pages/ai/AssistantPage';
 import { ProfilePage, AchievementsPage, NotificationsPage } from './pages/account/AccountPages';
 
 class AppErrorBoundary extends React.Component<
@@ -54,7 +53,7 @@ class AppErrorBoundary extends React.Component<
       return (
         <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6 text-center">
           <div className="max-w-md">
-            <img src="/logo.png" alt="LearnX Logo" className="w-16 h-16 bg-white rounded-full mx-auto object-cover" />
+            <img src="https://cdn.phototourl.com/free/2026-09-05-64dcc94e-b14d-45c2-b144-78f775597507.jpg" alt="LearnX Logo" className="w-16 h-16 bg-white rounded-full mx-auto object-cover" />
             <h1 className="text-2xl font-bold mt-5">LearnX needs a refresh</h1>
             <p className="text-slate-400 mt-2">We could not load this screen. Your account data is safe.</p>
             <button onClick={() => window.location.reload()} className="mt-5 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 font-bold text-sm">Reload LearnX</button>
@@ -108,8 +107,6 @@ const AppContent: React.FC = () => {
       case 'learn':
       case 'discover':
         return <LearnPage />;
-      case 'assistant':
-        return <AssistantPage />;
       case 'teach':
         return <TeacherDashboard />;
       case 'trainer-profile':
@@ -145,7 +142,7 @@ const AppContent: React.FC = () => {
       <Navbar />
 
       {/* Main Content Area */}
-      <main className="flex-1 pb-16 md:pb-0">
+      <main className={`flex-1 ${activeView === 'landing' ? '' : 'pb-16 md:pb-0'}`}>
         {renderCurrentView()}
       </main>
 
@@ -157,7 +154,7 @@ const AppContent: React.FC = () => {
       <ToastContainer />
 
       {/* Footer */}
-      <Footer />
+      {activeView !== 'landing' && <Footer />}
 
       {/* Bottom Navigation for Mobile */}
       <MobileNavigation />

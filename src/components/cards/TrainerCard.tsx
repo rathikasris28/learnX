@@ -77,11 +77,17 @@ export const TrainerCard: React.FC<{
           {trainer.bio}
         </p>
 
+        {trainer.matchReasons?.[0] && (
+          <p className="text-[11px] text-teal-700 bg-teal-50/70 border border-teal-100 rounded-lg px-2.5 py-1.5 mb-3">
+            Why recommended: {trainer.matchReasons[0]}
+          </p>
+        )}
+
         {/* Skills with verification badges */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {(trainer.skills || []).map((skill) => {
             const skillName = typeof skill === 'string' ? skill : skill.name;
-            const skillLevel = typeof skill === 'string' ? 'Intermediate' : skill.level;
+            const skillLevel = typeof skill === 'string' ? 'self-claimed' : skill.level;
             return (
               <div key={skillName} className="flex items-center gap-1">
                 <span className="text-xs font-medium text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200">
