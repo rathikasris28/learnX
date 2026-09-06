@@ -3,7 +3,7 @@ import { X, Calendar, Clock, Sparkles, BookOpen, AlertCircle, CheckCircle2 } fro
 import { Trainer } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { TimeCreditNotice } from '../common/TimeCreditNotice';
-import { bookSessionWithApi } from '../../services/apiClient';
+import { bookSessionWithApi, listSessionsWithApi } from '../../services/apiClient';
 
 export const ScheduleSessionModal: React.FC<{
   trainer?: Trainer;
@@ -15,6 +15,7 @@ export const ScheduleSessionModal: React.FC<{
     bookSession,
     selectedTrainer,
     trainers,
+    setSessions,
     isScheduleModalOpen,
     setIsScheduleModalOpen,
     setCurrentUser,
@@ -81,6 +82,7 @@ export const ScheduleSessionModal: React.FC<{
           endsAt: end.toISOString(),
           learningGoal
         });
+        setSessions(await listSessionsWithApi());
         setCurrentUser((user) => user ? { ...user, timeCredits: Math.max(0, user.timeCredits - 1), totalUsedCredits: user.totalUsedCredits + 1 } : user);
         showToast('Session booked and Time Credit secured.', 'success');
         handleClose();

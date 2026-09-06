@@ -92,17 +92,41 @@ export async function listSessions(request: AuthRequest, response: Response) {
 
 async function updateSessionStatus(request: AuthRequest, response: Response, status: 'cancelled' | 'completed') {
   const { id } = idSchema.parse(request.params);
-  const result = await query<{ id: string; status: string }>(
-    `UPDATE learning_sessions SET status = $1
-     WHERE id = $2 AND (learner_id = $3 OR trainer_id = $3) AND status IN ('scheduled', 'in-progress')
-     RETURNING id, status`,
-    [status, id, request.auth!.userId]
-  );
-  if (!result.rowCount) {
+  const session = await withTransaction(async (client) => {
+    const existing = await client.query<{ id: string; learner_id: string; trainer_id: string; status: string }>(
+      `SELECT id, learner_id, trainer_id, status FROM learning_sessions
+       WHERE id = $1 AND (learner_id = $2 OR trainer_id = $2) FOR UPDATE`,
+      [id, request.auth!.userId]
+    );
+    const current = existing.rows[0];
+    if (!current || !['scheduled', 'in-progress'].includes(current.status)) return null;
+
+    const updated = await client.query<{ id: string; status: string }>(
+      'UPDATE learning_sessions SET status = $1 WHERE id = $2 RETURNING id, status',
+      [status, id]
+    );
+    const walletUserId = status === 'cancelled' ? current.learner_id : current.trainer_id;
+    const walletType = status === 'cancelled' ? 'refund' : 'earned';
+    const walletReason = status === 'cancelled' ? 'Cancelled session credit refund' : 'Completed learning session';
+    await client.query(
+      `UPDATE users SET time_credits = time_credits + 1,
+         total_earned_credits = total_earned_credits + CASE WHEN $2 = 'earned' THEN 1 ELSE 0 END,
+        total_used_credits = total_used_credits + CASE WHEN $2 = 'refund' THEN -1 ELSE 0 END,
+         updated_at = NOW() WHERE id = $1`,
+      [walletUserId, walletType]
+    );
+    await client.query(
+      `INSERT INTO wallet_transactions (user_id, session_id, type, amount, reason)
+       VALUES ($1, $2, $3, 1, $4)`,
+      [walletUserId, id, walletType, walletReason]
+    );
+    return updated.rows[0];
+  });
+  if (!session) {
     response.status(404).json({ error: 'Session not found or cannot be updated' });
     return;
   }
-  response.json({ session: result.rows[0] });
+  response.json({ session });
 }
 
 export async function cancelSession(request: AuthRequest, response: Response) {

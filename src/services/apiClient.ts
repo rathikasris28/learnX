@@ -12,6 +12,9 @@ type ApiUser = {
   state: string | null;
   city: string | null;
   languages: string[];
+  learningLevel?: UserProfile['learningLevel'];
+  teachingLevel?: UserProfile['teachingLevel'];
+  learningGoal?: string;
   bio: string;
   isEmailVerified: boolean;
   termsAccepted: boolean;
@@ -69,12 +72,31 @@ export type ApiSkill = {
   levels: string[];
 };
 
+export type ApiSession = {
+  id: string;
+  topic: string;
+  skill_name: string | null;
+  learner_id: string;
+  learner_name: string;
+  trainer_id: string;
+  trainer_name: string;
+  starts_at: string;
+  ends_at: string;
+  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  meeting_room_id: string | null;
+};
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
+    const token = localStorage.getItem('learnx_access_token');
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {})
+      }
     });
   } catch {
     throw new Error('LearnX server is unavailable. Start the backend with "npm run dev" in the backend folder.');
@@ -83,7 +105,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const payload = (await response.json().catch(() => ({}))) as { error?: string; details?: unknown };
   if (!response.ok) {
     if (response.status === 401) {
-      throw new Error('Your session has expired. Please sign in again.');
+      localStorage.removeItem('learnx_access_token');
+      localStorage.removeItem('learnx_session_v2');
+      throw new Error(payload.error || 'Your session has expired. Please sign in again.');
     }
     throw new Error(payload.error || `Server request failed (${response.status}).`);
   }
@@ -101,6 +125,9 @@ export function mapApiUser(user: ApiUser): UserProfile {
     state: user.state || '',
     city: user.city || '',
     languages: user.languages,
+    learningLevel: user.learningLevel,
+    teachingLevel: user.teachingLevel,
+    learningGoal: user.learningGoal,
     bio: user.bio,
     joinedDate: user.joinedDate,
     timeCredits: user.timeCredits,
@@ -132,6 +159,11 @@ export async function loginWithApi(email: string, password: string) {
     body: JSON.stringify({ email, password })
   });
   return { ...result, user: mapApiUser(result.user) };
+}
+
+export async function getMeWithApi() {
+  const result = await request<{ user: ApiUser }>('/auth/me');
+  return mapApiUser(result.user);
 }
 
 export async function verifyEmailWithApi(email: string, code: string) {
@@ -197,5 +229,48 @@ export async function bookSessionWithApi(input: {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     body: JSON.stringify(input)
+  });
+}
+
+export function mapApiSessionToLearningSession(session: ApiSession) {
+  const startsAt = new Date(session.starts_at);
+  const endsAt = new Date(session.ends_at);
+  const durationMinutes = Math.max(1, Math.round((endsAt.getTime() - startsAt.getTime()) / 60000));
+  return {
+    id: session.id,
+    skillTitle: session.skill_name || 'Learning session',
+    topic: session.topic,
+    trainerId: session.trainer_id,
+    trainerName: session.trainer_name,
+    trainerAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+    learnerId: session.learner_id,
+    learnerName: session.learner_name,
+    learnerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    date: startsAt.toLocaleDateString(),
+    time: startsAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+    duration: `${durationMinutes} mins`,
+    creditsCost: 1,
+    status: session.status,
+    learningGoal: 'Personal skill development'
+  };
+}
+
+export async function listSessionsWithApi() {
+  const result = await request<{ sessions: ApiSession[] }>('/sessions');
+  return result.sessions.map(mapApiSessionToLearningSession);
+}
+
+export async function completeSessionWithApi(sessionId: string) {
+  return request<{ session: { id: string; status: string } }>(`/sessions/${sessionId}/complete`, { method: 'PUT' });
+}
+
+export async function cancelSessionWithApi(sessionId: string) {
+  return request<{ session: { id: string; status: string } }>(`/sessions/${sessionId}/cancel`, { method: 'PUT' });
+}
+
+export async function createReviewWithApi(sessionId: string, rating: number, comment: string) {
+  return request(`/sessions/${sessionId}/review`, {
+    method: 'POST',
+    body: JSON.stringify({ rating, comment })
   });
 }

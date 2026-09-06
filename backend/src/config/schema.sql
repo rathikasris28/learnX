@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
   city VARCHAR(80),
   languages TEXT[] NOT NULL DEFAULT '{}',
   learning_goal VARCHAR(160),
+  learning_level VARCHAR(30),
+  teaching_level VARCHAR(30),
   teaching_styles TEXT[] NOT NULL DEFAULT '{}',
   availability TEXT[] NOT NULL DEFAULT '{}',
   bio TEXT NOT NULL DEFAULT '',
@@ -30,6 +32,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS learning_goal VARCHAR(160);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS learning_level VARCHAR(30);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS teaching_level VARCHAR(30);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS teaching_styles TEXT[] NOT NULL DEFAULT '{}';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS availability TEXT[] NOT NULL DEFAULT '{}';
 

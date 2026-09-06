@@ -13,5 +13,9 @@ export async function getTrust(request: AuthRequest, response: Response) {
 export async function recalculateTrust(request: AuthRequest, response: Response) {
   const body = z.object({ userId: z.string().uuid().optional() }).parse(request.body);
   const userId = body.userId || request.auth!.userId;
+  if (request.auth!.role !== 'admin' && userId !== request.auth!.userId) {
+    response.status(403).json({ error: 'You do not have permission to recalculate this trust score' });
+    return;
+  }
   response.json({ trust: await recalculateTrustScore(userId) });
 }

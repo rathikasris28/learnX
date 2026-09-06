@@ -12,7 +12,17 @@ import { quizRoutes } from './routes/quizRoutes.js';
 
 export const app = express();
 
-app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+const allowedOrigins = [...new Set([env.FRONTEND_URL, ...env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)])];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origin is not allowed'));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_request, response) => {

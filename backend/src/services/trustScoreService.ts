@@ -27,19 +27,33 @@ export async function calculateTrustScore(userId: string): Promise<TrustScoreBre
   const result = await query<TrustRow>(
     `SELECT u.is_email_verified,
             (u.name <> '' AND u.bio <> '' AND cardinality(u.languages) > 0 AND u.country IS NOT NULL) AS profile_completed,
-            COUNT(s.id) FILTER (WHERE s.status = 'completed')::int AS completed_sessions,
-            COUNT(s.id)::int AS total_sessions,
-            COUNT(s.id) FILTER (WHERE s.status = 'cancelled')::int AS cancelled_sessions,
-            AVG(r.rating)::float AS average_rating,
-            COUNT(r.id)::int AS review_count,
-            COUNT(r.id) FILTER (WHERE r.rating >= 4)::int AS positive_reviews,
-            MAX(qa.score)::float AS best_quiz_score
+            COALESCE(s.completed_sessions, 0)::int AS completed_sessions,
+            COALESCE(s.total_sessions, 0)::int AS total_sessions,
+            COALESCE(s.cancelled_sessions, 0)::int AS cancelled_sessions,
+            r.average_rating,
+            COALESCE(r.review_count, 0)::int AS review_count,
+            COALESCE(r.positive_reviews, 0)::int AS positive_reviews,
+            q.best_quiz_score
      FROM users u
-     LEFT JOIN learning_sessions s ON s.trainer_id = u.id
-     LEFT JOIN reviews r ON r.trainer_id = u.id
-     LEFT JOIN quiz_attempts qa ON qa.user_id = u.id AND qa.completed_at IS NOT NULL
+     LEFT JOIN (
+       SELECT trainer_id,
+              COUNT(*) FILTER (WHERE status = 'completed') AS completed_sessions,
+              COUNT(*) AS total_sessions,
+              COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled_sessions
+       FROM learning_sessions GROUP BY trainer_id
+     ) s ON s.trainer_id = u.id
+     LEFT JOIN (
+       SELECT trainer_id, AVG(rating)::float AS average_rating,
+              COUNT(*) AS review_count,
+              COUNT(*) FILTER (WHERE rating >= 4) AS positive_reviews
+       FROM reviews GROUP BY trainer_id
+     ) r ON r.trainer_id = u.id
+     LEFT JOIN (
+       SELECT user_id, MAX(score)::float AS best_quiz_score
+       FROM quiz_attempts WHERE completed_at IS NOT NULL GROUP BY user_id
+     ) q ON q.user_id = u.id
      WHERE u.id = $1
-     GROUP BY u.id, u.is_email_verified, u.name, u.bio, u.languages, u.country`,
+    `,
     [userId]
   );
   const row = result.rows[0];

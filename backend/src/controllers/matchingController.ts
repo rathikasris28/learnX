@@ -59,24 +59,34 @@ export async function getMatches(request: AuthRequest, response: Response) {
   };
   const result = await query<CandidateRow>(
     `SELECT u.id, u.name, u.avatar, u.bio, u.languages, u.availability, u.teaching_styles,
-            u.rating, COUNT(DISTINCT r.id)::int AS reviews_count,
+            u.rating, COALESCE(r.reviews_count, 0)::int AS reviews_count,
             COALESCE(ts.final_trust_score, u.trust_score, 0)::float AS trust_score,
-            MAX(us.quiz_score)::float AS quiz_score,
-            u.reliability_score, COUNT(DISTINCT completed.id)::int AS completed_sessions,
-            COUNT(DISTINCT cancelled.id)::int AS cancelled_sessions,
-            u.country, u.state, u.city,
-            s.name AS skill_name, us.level AS skill_level
+            COALESCE(q.quiz_score, 0)::float AS quiz_score,
+            u.reliability_score, COALESCE(s.completed_sessions, 0)::int AS completed_sessions,
+            COALESCE(s.cancelled_sessions, 0)::int AS cancelled_sessions,
+                 u.country, u.state, u.city,
+                 skill.name AS skill_name, us.level AS skill_level
      FROM users u
      JOIN user_skills us ON us.user_id = u.id AND us.direction = 'teach'
-     JOIN skills s ON s.id = us.skill_id
+               JOIN skills skill ON skill.id = us.skill_id
      LEFT JOIN trust_scores ts ON ts.user_id = u.id
-     LEFT JOIN reviews r ON r.trainer_id = u.id
-     LEFT JOIN learning_sessions completed ON completed.trainer_id = u.id AND completed.status = 'completed'
-     LEFT JOIN learning_sessions cancelled ON cancelled.trainer_id = u.id AND cancelled.status = 'cancelled'
+     LEFT JOIN (
+       SELECT trainer_id, COUNT(*)::int AS reviews_count
+       FROM reviews GROUP BY trainer_id
+     ) r ON r.trainer_id = u.id
+     LEFT JOIN (
+       SELECT trainer_id,
+              COUNT(*) FILTER (WHERE status = 'completed')::int AS completed_sessions,
+              COUNT(*) FILTER (WHERE status = 'cancelled')::int AS cancelled_sessions
+       FROM learning_sessions GROUP BY trainer_id
+     ) s ON s.trainer_id = u.id
+     LEFT JOIN (
+       SELECT user_id, MAX(quiz_score)::float AS quiz_score
+       FROM user_skills WHERE quiz_score IS NOT NULL GROUP BY user_id
+     ) q ON q.user_id = u.id
      WHERE u.role IN ('teacher', 'both')
        AND u.is_email_verified = TRUE
-       AND LOWER(s.name) = LOWER($1)
-     GROUP BY u.id, ts.final_trust_score, s.name, us.level
+      AND LOWER(skill.name) = LOWER($1)
      ORDER BY trust_score DESC, u.rating DESC`,
     [input.skill]
   );

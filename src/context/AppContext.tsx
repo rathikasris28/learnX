@@ -20,6 +20,7 @@ import {
   INITIAL_ACHIEVEMENTS
 } from '../data/mockData';
 import { mockEmailService } from '../services/emailService';
+import { getMeWithApi, listSessionsWithApi } from '../services/apiClient';
 
 export type AppView =
   | 'landing'
@@ -65,6 +66,7 @@ interface AppContextType {
   setTrainers: React.Dispatch<React.SetStateAction<Trainer[]>>;
   updateTrainerStatus: (trainerId: string, status: TrainerStatus) => void;
   sessions: LearningSession[];
+  setSessions: React.Dispatch<React.SetStateAction<LearningSession[]>>;
   bookSession: (newSession: Partial<LearningSession>) => boolean;
   completeSession: (sessionId: string, rating: number, feedback: string) => void;
   walletTransactions: WalletTransaction[];
@@ -96,6 +98,10 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+function dashboardView(role: UserProfile['role']): AppView {
+  return role === 'teacher' ? 'teacher-dashboard' : role === 'admin' ? 'admin-dashboard' : 'learner-dashboard';
+}
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Persistence via localStorage for prototype
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
@@ -111,7 +117,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [activeView, setActiveView] = useState<AppView>(() => {
-    return currentUser ? (currentUser.role === 'teacher' ? 'teacher-dashboard' : currentUser.role === 'admin' ? 'admin-dashboard' : 'learner-dashboard') : 'landing';
+    return currentUser ? dashboardView(currentUser.role) : 'landing';
   });
 
   const [trainers, setTrainers] = useState<Trainer[]>(INITIAL_TRAINERS);
@@ -142,6 +148,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.removeItem('learnx_session_v2');
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!localStorage.getItem('learnx_access_token')) return;
+
+    getMeWithApi()
+      .then((user) => {
+        setCurrentUser(user);
+        setActiveView(dashboardView(user.role));
+        listSessionsWithApi().then((backendSessions) => setSessions(backendSessions)).catch(() => undefined);
+      })
+      .catch(() => {
+        setCurrentUser(null);
+        setActiveView('landing');
+      });
+  }, []);
 
   // Scroll to top on view changes
   useEffect(() => {
@@ -452,7 +473,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const logout = () => {
     localStorage.removeItem('learnx_access_token');
+    localStorage.removeItem('learnx_session_v2');
     setCurrentUser(null);
+    setIsEmailVerificationModalOpen(false);
     setActiveView('login');
     showToast('You have been logged out.', 'info');
   };
@@ -474,6 +497,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setTrainers,
         updateTrainerStatus,
         sessions,
+        setSessions,
         bookSession,
         completeSession,
         walletTransactions,

@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { loginWithApi } from '../../services/apiClient';
 
 export const LoginPage: React.FC = () => {
-  const { setCurrentUser, setActiveView, setIsEmailVerificationModalOpen, showToast } = useApp();
+  const { currentUser, activeView, setCurrentUser, setActiveView, setIsEmailVerificationModalOpen, showToast } = useApp();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+
+  useEffect(() => {
+    if (activeView === 'login' && currentUser?.isEmailVerified === false) {
+      setIsEmailVerificationModalOpen(true);
+    }
+  }, [activeView, currentUser?.isEmailVerified, setIsEmailVerificationModalOpen]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,11 +28,13 @@ export const LoginPage: React.FC = () => {
       const result = await loginWithApi(email, password);
       localStorage.setItem('learnx_access_token', result.token);
       setCurrentUser(result.user);
-      setActiveView(result.user.role === 'teacher' ? 'teacher-dashboard' : result.user.role === 'admin' ? 'admin-dashboard' : 'learner-dashboard');
-      if (result.verificationRequired) {
+      if (result.verificationRequired || result.user.isEmailVerified === false) {
+        setActiveView('login');
         setIsEmailVerificationModalOpen(true);
+      } else {
+        setActiveView(result.user.role === 'teacher' ? 'teacher-dashboard' : result.user.role === 'admin' ? 'admin-dashboard' : 'learner-dashboard');
       }
-      showToast(`Welcome back, ${result.user.name.split(' ')[0]}!`, 'success');
+      showToast(`A verification code was sent to ${result.user.email}.`, 'info');
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Unable to sign in right now.', 'error');
     }

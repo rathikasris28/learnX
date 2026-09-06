@@ -18,6 +18,8 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
 }) => {
   const {
     currentUser,
+    activeView,
+    setActiveView,
     isEmailVerificationModalOpen,
     setIsEmailVerificationModalOpen,
     setCurrentUser,
@@ -131,6 +133,9 @@ export const EmailVerificationModal: React.FC<EmailVerificationModalProps> = ({
     try {
       await verifyEmailWithApi(targetEmail, code);
       setCurrentUser((user) => user ? { ...user, isEmailVerified: true } : user);
+      if (activeView === 'login' && currentUser) {
+        setActiveView(currentUser.role === 'teacher' ? 'teacher-dashboard' : currentUser.role === 'admin' ? 'admin-dashboard' : 'learner-dashboard');
+      }
       setIsSubmitting(false);
       setIsSuccess(true);
       if (onSuccess) onSuccess();

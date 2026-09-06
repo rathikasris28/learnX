@@ -26,14 +26,17 @@ import { useApp } from '../../context/AppContext';
 import { TimeCreditNotice } from '../../components/common/TimeCreditNotice';
 import { LiveWebcamFeed } from '../../components/sessions/LiveWebcamFeed';
 import { FrontendCodeStudio } from '../../components/sessions/FrontendCodeStudio';
+import { completeSessionWithApi, createReviewWithApi } from '../../services/apiClient';
 
 export const SessionRoomPage: React.FC = () => {
   const {
     selectedSession,
     completeSession,
+    setSessions,
     setActiveView,
     showToast,
     currentUser,
+    setCurrentUser,
     setIsEmailVerificationModalOpen
   } = useApp();
 
@@ -131,9 +134,27 @@ export const SessionRoomPage: React.FC = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
-  const handleConfirmEndSession = () => {
+  const handleConfirmEndSession = async () => {
     if (selectedSession) {
-      completeSession(selectedSession.id, rating, feedback);
+      const isBackendSession = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(selectedSession.id);
+      if (isBackendSession) {
+        try {
+          await completeSessionWithApi(selectedSession.id);
+          setSessions((sessions) => sessions.map((session) => session.id === selectedSession.id ? { ...session, status: 'completed', ratingGiven: rating, feedback } : session));
+          if (currentUser?.id === selectedSession.trainerId) {
+            setCurrentUser((user) => user ? { ...user, timeCredits: user.timeCredits + 1, totalEarnedCredits: user.totalEarnedCredits + 1 } : user);
+          }
+          if (currentUser?.id === selectedSession.learnerId) {
+            await createReviewWithApi(selectedSession.id, rating, feedback);
+          }
+          showToast('Session completed and saved.', 'success');
+        } catch (error) {
+          showToast(error instanceof Error ? error.message : 'Unable to save the completed session.', 'error');
+          return;
+        }
+      } else {
+        completeSession(selectedSession.id, rating, feedback);
+      }
     }
     setIsEndModalOpen(false);
     setActiveView('sessions');

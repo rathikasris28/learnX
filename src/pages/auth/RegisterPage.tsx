@@ -99,8 +99,8 @@ export const RegisterPage: React.FC = () => {
       setErrorMsg('Please provide a valid email address.');
       return false;
     }
-    if (password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters long.');
+    if (password.length < 8) {
+      setErrorMsg('Password must be at least 8 characters long.');
       return false;
     }
     if (password !== confirmPassword) {
@@ -203,9 +203,14 @@ export const RegisterPage: React.FC = () => {
         country,
         state: stateName,
         city: cityName,
-        languages: selectedLanguages,
+        languages: [...new Set([...selectedLanguages, ...(role !== 'learner' ? teachingLanguages : [])])],
+        learningLevel: role !== 'teacher' ? learningLevel : undefined,
+        teachingLevel: role !== 'learner' ? teachingLevel : undefined,
         skillsLearning: role !== 'teacher' ? skillsLearning : [],
         skillsTeaching: role !== 'learner' ? skillsTeaching : [],
+        learningGoal: role !== 'teacher' ? learningGoal : undefined,
+        teachingStyles: [],
+        availability: role !== 'learner' ? availability : [],
         termsAccepted: true,
         termsVersion: '1.0'
       });
