@@ -1,26 +1,24 @@
 import express from 'express';
-
 import cors from 'cors';
-
 import { ZodError } from 'zod';
 
 import { env } from './config/env.js';
 import { authRoutes } from './routes/authRoutes.js';
 import { matchingRoutes } from './routes/matchingRoutes.js';
 import { skillRoutes } from './routes/skillRoutes.js';
-
 import { sessionRoutes } from './routes/sessionRoutes.js';
-
 import { trustRoutes } from './routes/trustRoutes.js';
-
 import { quizRoutes } from './routes/quizRoutes.js';
-
 import { errorMiddleware } from './middleware/errorMiddleware.js';
 
 export const app = express();
-/* =========================================================
-CORS CONFIGURATION
-========================================================= */
+
+app.get('/', (_request, response) => {
+  response.status(200).json({
+    status: 'ok',
+    message: 'LearnX Backend API is running successfully'
+  });
+});
 
 const allowedOrigins = [
 ...new Set([
